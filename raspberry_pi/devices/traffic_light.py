@@ -52,8 +52,8 @@ class traffic_light():
         self.y = led(YELLOW_PIN,2,time_on=3)
         self.y_rain = led(YELLOW_PIN,2,time_on=0.5)
         self.state = traffic_light_state()
-        self.mode = 0
-        self.auto_mode = 1 
+        self.mode = 0 # 0: nomormal, 1: rains
+        self.auto_mode = True # False: manual, True: auto
 
     def set_mode(self, mode:int):
         self.mode = mode

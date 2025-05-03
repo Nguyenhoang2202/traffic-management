@@ -2,12 +2,23 @@ import serial
 import time
 
 class GPSReader:
-    def __init__(self, port="/dev/serial0", baud_rate=9600):
+    def __init__(self, port="/dev/serial0", baud_rate=9600, simulate=False):
         self.port = port
         self.baud_rate = baud_rate
+        self.simulate = simulate
 
     def read_coordinates(self, attempts=100):
-        """Đọc tọa độ GPS hợp lệ từ module."""
+        """Đọc tọa độ GPS hợp lệ từ module hoặc giả lập nếu không có thiết bị."""
+        if self.simulate:
+            # Giả lập dữ liệu ngẫu nhiên xung quanh một tọa độ
+            import random
+            base_lat, base_lon = 20.956475, 106.005882
+            jitter = lambda: random.uniform(-0.0005, 0.0005)
+            lat = base_lat + jitter()
+            lon = base_lon + jitter()
+            print(f"🧪 Tọa độ giả lập: {lat:.6f}, {lon:.6f}")
+            return lat, lon
+
         try:
             with serial.Serial(self.port, self.baud_rate, timeout=1) as gps_serial:
                 print("Đang đọc dữ liệu GPS...")
@@ -33,8 +44,8 @@ class GPSReader:
 
                 print("Không thể lấy được tọa độ GPS sau nhiều lần thử.")
                 return None, None
-        except KeyboardInterrupt:
-            print("Dừng đọc GPS do bị ngắt.")
+        except Exception as e:
+            print(f"Lỗi đọc GPS: {e}")
             return None, None
 
     def convert_to_degrees(self, raw_value, direction):

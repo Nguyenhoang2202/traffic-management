@@ -24,27 +24,3 @@ class Camera:
 
     def get_latest_frame(self):
         return self.latest_frame
-
-
-# async def connect_forever():
-#     picam2 = Picamera2()
-#     picam2.configure(picam2.create_preview_configuration(main={"size": (640, 480)}))
-#     picam2.start()
-
-#     while True:
-#         try:
-#             print(f"🔄 Đang cố kết nối tới {SERVER_URI} ...")
-#             async with websockets.connect(SERVER_URI) as ws:
-#                 print("✅ Kết nối WebSocket thành công!")
-#                 await send_video(ws, picam2)
-
-#         except Exception as e:
-#             print(f"⚠️ Mất kết nối WebSocket: {e}")
-#             print("⏳ Thử lại sau 5 giây...\n")
-#             await asyncio.sleep(5)
-
-# if __name__ == "__main__":
-#     try:
-#         asyncio.run(connect_forever())
-#     except KeyboardInterrupt:
-#         print("🛑 Đã dừng client theo yêu cầu.")

@@ -44,7 +44,7 @@ def safe_task(coro, name):
 # Hàm main
 async def main():
     # Khởi tạo thiết bị
-    gps = GPSReader()
+    gps = GPSReader(simulate=True)
     trafficLight = traffic_light(green_time, red_time)
     SevenSegment_display = SevenSegmentDisplay()
     rainStatus = RainSensor()
