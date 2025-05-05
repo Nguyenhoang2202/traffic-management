@@ -43,6 +43,15 @@ async def read_user(current_user: User = Depends(get_current_user), db: AsyncIOM
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
     
+# Get user by role
+@router.get("/{role}", response_model=User)
+async def read_users_by_role(role:str, current_user: User = Depends(get_current_user), skip: int = 0, limit: int = 100, db: AsyncIOMotorDatabase = Depends(get_db)):
+    check_role(current_user.role, ["admin"])
+    try:
+        return await get_all_users_by_role(db=db,role=role,skip=skip,limit=limit)
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+    
 # Put user
 @router.put("/{username}", response_model=User)
 async def put_user(username: str, user_data: updateUser, current_user: User = Depends(get_current_user), db: AsyncIOMotorDatabase = Depends(get_db)):

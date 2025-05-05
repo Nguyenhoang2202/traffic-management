@@ -40,28 +40,44 @@ async def send_data(device_id: str):
     last_data = connecting_devices[device_id]["last_data"]
     last_detect_data = connecting_devices[device_id]["last_detect_data"]
     last_analyze_data = connecting_devices[device_id]["last_analyze_data"]
-
+    print(f"last_data: {last_data}")
+    print(f"last_detect_data: {last_detect_data}")
+    print(f"last_analyze_data: {last_analyze_data}")
     # Các trường dữ liệu sẽ gửi
     data_fields = ["rain", "mode", "auto_mode","timestamp"]
     detect_data_fields = ["num_total"]
     analyze_data_fields = ["all_green_time","numb_turn_green","average_green_time"]
 
+    # Kiểm tra đủ trường trong từng nhóm dữ liệu
+    if not all(field in last_data for field in data_fields):
+        print("⚠️ Dữ liệu `last_data` chưa đầy đủ.")
+        return
+    if not all(field in last_detect_data for field in detect_data_fields):
+        print("⚠️ Dữ liệu `last_detect_data` chưa đầy đủ.")
+        return
+    if not all(field in last_analyze_data for field in analyze_data_fields):
+        print("⚠️ Dữ liệu `last_analyze_data` chưa đầy đủ.")
+        return
+    
     # Lấy các dữ liệu tương ứng
     data = {field: last_data[field] for field in data_fields if field in last_data}
     detect_data = {field: last_detect_data[field] for field in detect_data_fields if field in last_detect_data}
     analyze_data = {field: last_analyze_data[field] for field in analyze_data_fields if field in last_analyze_data}
+    print(f'data: {data}')
+    print(f'detect_data: {detect_data}')
+    print(f'analyze_data: {analyze_data}')
     # Tổng hợp dữ liệu
-    data = {"device_id":device_id,**data, **detect_data, **analyze_data}
-    await data_analyzed.insert_one(data)
+    data_total = {"device_id":device_id,**data, **detect_data, **analyze_data}
+    await data_analyzed.insert_one(data_total)
 
     # Reset lại dữ liệu sau khi đã gửi lên DB
     connecting_devices[device_id]["reset_detect"] = True
     connecting_devices[device_id]["reset_analyze"] = True
 
-    print(f"✅ Đã lưu dữ liệu lên DB: {data}")
+    # print(f"✅ Đã lưu dữ liệu lên DB: {data}")
 
-
-async def auto_send_data(time_interval: int = 3600):
+# ====== HÀM TỰ ĐỘNG GỬI DỮ LIỆU ======
+async def auto_send_data(time_interval: int = 10):
     while True:
         for device_id in connecting_devices:
             await send_data(device_id=device_id)

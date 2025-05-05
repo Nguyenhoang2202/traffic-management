@@ -17,7 +17,6 @@ VALID_CLASSES = {"car", "truck", "bus", "motorbike", "motorcycle"}
 model = YOLO("yolov8m.pt") 
 
 #-----------------------------------------------------
-alowSelectRoi = 1
 # Hàm chọn ROI
 def select_roi(frame):
     roi_points = [[107, 64], [102, 440], [562, 434], [569, 59]]
@@ -190,6 +189,7 @@ async def object_detection(device_id):
                 img_detected = base64.b64encode(buffer).decode("utf-8")
             
             #
+            # print(f"ID: {device_id}, Current: {num_current}, Total: {num_total}, Cover: {cover_ratio:.2f}%")
             last_detect_data = connecting_devices[device_id]["last_detect_data"]
             last_detect_data["img_detected"]=img_detected
             last_detect_data["num_current"]=num_current

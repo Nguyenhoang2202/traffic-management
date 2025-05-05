@@ -6,7 +6,7 @@ import cv2
 from fastapi.websockets import WebSocketState
 import numpy as np
 from app.websocket_routers.device_connecting import connecting_devices
-from app.testvideo import display_image_from_base64
+# from app.testvideo import display_image_from_base64
 from app.database.database import save_camera_info
 
 ws_device_router = APIRouter()
@@ -58,13 +58,13 @@ async def websocket_endpoint(websocket: WebSocket):
                     last_data = connecting_devices[device_id]["last_data"]
 
                     # Cập nhật từng phần nếu có dữ liệu
-                    allowed_fields = ["image", "rain", "mode", "auto_mode","datetime"]
+                    allowed_fields = ["image", "rain", "mode", "auto_mode","timestamp"]
 
                     for field in allowed_fields:
                         value = packet.get(field)
-                        # if field != "image":
-                        #     print(f'{field}: {value}')
                         if value is not None:
+                            if field == "rain" and value == True:
+                                last_data["rain_occurred"] = True
                             last_data[field] = value
 
                     if traffic_light is not None:

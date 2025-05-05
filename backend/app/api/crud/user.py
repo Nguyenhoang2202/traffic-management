@@ -35,6 +35,13 @@ async def get_all_users(db: AsyncIOMotorDatabase, skip: int = 0, limit: int = 10
         raise HTTPException(status_code=404, detail="No users found")
     return [doc async for doc in cursor]
 
+async def get_all_users_by_role(db: AsyncIOMotorDatabase, role: str, skip: int = 0, limit: int = 100) -> List[User]:
+    collection = db["users"]
+    cursor = collection.find({"role":role,"is_active": True}).skip(skip).limit(limit)
+    if cursor is None:
+        raise HTTPException(status_code=404, detail="No users found")
+    return [doc async for doc in cursor]
+
 async def get_user(db: AsyncIOMotorDatabase, username: str) -> User:
     collection = db["users"]
     user = await collection.find_one({"username": username, "is_active": True})
