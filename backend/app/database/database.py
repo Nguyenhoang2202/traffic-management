@@ -40,9 +40,6 @@ async def send_data(device_id: str):
     last_data = connecting_devices[device_id]["last_data"]
     last_detect_data = connecting_devices[device_id]["last_detect_data"]
     last_analyze_data = connecting_devices[device_id]["last_analyze_data"]
-    print(f"last_data: {last_data}")
-    print(f"last_detect_data: {last_detect_data}")
-    print(f"last_analyze_data: {last_analyze_data}")
     # Các trường dữ liệu sẽ gửi
     data_fields = ["rain", "mode", "auto_mode","timestamp"]
     detect_data_fields = ["num_total"]
@@ -63,9 +60,6 @@ async def send_data(device_id: str):
     data = {field: last_data[field] for field in data_fields if field in last_data}
     detect_data = {field: last_detect_data[field] for field in detect_data_fields if field in last_detect_data}
     analyze_data = {field: last_analyze_data[field] for field in analyze_data_fields if field in last_analyze_data}
-    print(f'data: {data}')
-    print(f'detect_data: {detect_data}')
-    print(f'analyze_data: {analyze_data}')
     # Tổng hợp dữ liệu
     data_total = {"device_id":device_id,**data, **detect_data, **analyze_data}
     await data_analyzed.insert_one(data_total)

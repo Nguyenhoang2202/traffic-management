@@ -17,7 +17,8 @@ async def create_user(db: AsyncIOMotorDatabase, user: createUser):
         email=user.email,
     ).model_dump(by_alias=True)
     await collection.insert_one(new_user)
-    return new_user
+    access_token = create_access_token(data={"username": new_user["username"]})
+    return {"access_token": access_token, "token_type": "jwt"}
 
 async def login_user(db: AsyncIOMotorDatabase, user_login: loginUser):
     collection = db["users"]
@@ -26,7 +27,7 @@ async def login_user(db: AsyncIOMotorDatabase, user_login: loginUser):
         raise HTTPException(status_code=400, detail="Invalid username or password")
     
     access_token = create_access_token(data={"username": user["username"]})
-    return {"access_token": access_token, "token_type": "bearer"}
+    return {"access_token": access_token, "token_type": "jwt"}
 
 async def get_all_users(db: AsyncIOMotorDatabase, skip: int = 0, limit: int = 100) -> List[User]:
     collection = db["users"]

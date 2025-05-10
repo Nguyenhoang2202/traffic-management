@@ -19,7 +19,7 @@ model = YOLO("yolov8m.pt")
 #-----------------------------------------------------
 # Hàm chọn ROI
 def select_roi(frame):
-    roi_points = [[107, 64], [102, 440], [562, 434], [569, 59]]
+    roi_points = [[103, 10], [13, 475], [624, 477], [499, 8]]
 
     # def mouse_callback(event, x, y, flags, param):
     #     if event == cv2.EVENT_LBUTTONDOWN and len(roi_points) < 4:

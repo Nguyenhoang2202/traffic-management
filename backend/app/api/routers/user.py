@@ -1,6 +1,6 @@
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, Response
 from typing import List
-from ..models import User
+from ..models import User, TokenResponse
 from ..crud.user import *
 from ...database.database import get_db
 from ...auth.authorization import *
@@ -9,7 +9,7 @@ from fastapi.security import OAuth2PasswordRequestForm
 router = APIRouter(prefix="/users", tags=["users"])
 
 # Create user
-@router.post("/", response_model=User)
+@router.post("/", response_model=TokenResponse)
 async def post_user(user: createUser, db: AsyncIOMotorDatabase = Depends(get_db)):
     try:
         return await create_user(db=db, user=user)
@@ -19,12 +19,20 @@ async def post_user(user: createUser, db: AsyncIOMotorDatabase = Depends(get_db)
 
 # Test login user: user: OAuth2PasswordRequestForm = Depends()
 # Work: user: loginUser
-@router.post("/login")
-async def post_token_user(user: OAuth2PasswordRequestForm = Depends(), db: AsyncIOMotorDatabase = Depends(get_db)):
+@router.post("/login", response_model=TokenResponse)
+async def post_token_user(user: loginUser, db: AsyncIOMotorDatabase = Depends(get_db)):
     try:
         return await login_user(db=db, user_login=user)
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
+    
+# Logout user
+@router.post("/logout", status_code=status.HTTP_200_OK)
+def logout(response: Response):
+    # Xoá token bằng cách set lại cookie hết hạn
+    response.delete_cookie(key="access_token", path="/")
+    response.delete_cookie(key="token_type", path="/")
+    return {"message": "Logged out successfully"}
 
 # Get all user
 @router.get("/", response_model=List[User])
