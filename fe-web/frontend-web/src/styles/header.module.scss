@@ -1,0 +1,63 @@
+@import "base.scss";
+
+.header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background-color: $background;
+    margin-bottom: 1px;
+
+    font: {
+        family: Helvetica, sans-serif;
+        size: 18px;
+        weight: bold;
+    }
+
+    button {
+        border: none;
+        color: $color;
+        text-align: center;
+        font-size: 20px;
+        background-color: rgba(255, 255, 255, 0);
+        padding: 1rem;
+
+        &:hover {
+            background-color: $hover;
+        }
+    }
+
+    a {
+        display: block;
+        text-decoration: none;
+        color: $color;
+        text-align: center;
+        line-height: 1;
+        padding: 1rem;
+        cursor: pointer;
+
+        &:hover {
+            background-color: transparent;
+        }
+    }
+
+    // Container chứa các link điều hướng
+    .header_nav {
+        display: flex;
+        gap: 1rem;
+        flex: 1;
+        justify-content: center;
+
+        a {
+            text-decoration: none;
+            color: $color;
+            text-align: center;
+            padding: 1rem;
+
+            &:hover {
+                background-color: $hover;
+            }
+        }
+    }
+
+
+}

@@ -1,0 +1,81 @@
+.container {
+    display: grid;
+    grid-template-areas:
+        "title title"
+        "map table";
+    grid-template-columns: 70% 30%;
+    grid-template-rows: auto 1fr;
+    width: 100%;
+    min-height: 80vh;
+    padding: 1rem;
+    position: relative;
+
+    .title {
+        grid-area: title;
+        text-align: center;
+        margin-bottom: 1rem;
+    }
+
+    .wrap_map {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        border: 1px solid grey;
+        margin-right: 1rem;
+    }
+
+    .tableContainer {
+        width: 100%;
+        overflow: auto;
+        border: 1px solid gray;
+        height: 80vh;
+
+        table {
+            tbody {
+                tr {
+                    &:hover {
+                        background-color: rgb(190, 228, 255);
+                        cursor: pointer;
+                    }
+                }
+            }
+        }
+    }
+}
+
+@media (max-width: 768px) {
+    .container {
+        display: grid;
+        grid-template-areas:
+            "title"
+            "map"
+            "table";
+        grid-template-columns: 100%;
+        grid-template-rows: auto 1fr 1fr;
+        width: 100%;
+        min-height: 50vh;
+        padding: 1rem;
+        position: relative;
+
+        .title {
+            grid-area: title;
+            text-align: center;
+            margin-bottom: 1rem;
+        }
+
+        .wrap_map {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            border: 1px solid grey;
+            margin-bottom: 1rem;
+        }
+
+        .tableContainer {
+            width: 100%;
+            overflow: auto;
+            border: 1px solid gray;
+            height: 60vh;
+        }
+    }
+}
