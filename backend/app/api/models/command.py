@@ -10,3 +10,4 @@ class Command(BaseModel):
     green_time: Optional[int] = None
     red_time: Optional[int] = None
     timestamp: datetime = Field(default_factory=datetime.utcnow)
+    username: Optional[str] = None

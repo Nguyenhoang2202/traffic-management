@@ -63,8 +63,6 @@ async def websocket_endpoint(websocket: WebSocket):
                     for field in allowed_fields:
                         value = packet.get(field)
                         if value is not None:
-                            if field == "rain" and value == True:
-                                last_data["rain_occurred"] = True
                             last_data[field] = value
 
                     if traffic_light is not None:

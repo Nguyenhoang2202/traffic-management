@@ -1,5 +1,5 @@
 from fastapi.security import OAuth2PasswordBearer
-from fastapi import Depends, HTTPException, Request, status
+from fastapi import Depends, HTTPException, Header, Request, status
 from jose import JWTError
 from .authentication import decode_access_token
 from ..database.database import get_db
@@ -14,8 +14,14 @@ async def get_token_from_cookie(request: Request) -> str:
         raise HTTPException(status_code=401, detail="Access token not found in cookies")
     return token
 
+async def get_token_from_header(authorization: str = Header(...)) -> str:
+    if not authorization.startswith("Bearer "):
+        raise HTTPException(status_code=401, detail="Invalid token format")
+    token = authorization[len("Bearer "):]
+    return token
+
 async def get_current_user(
-    token: str = Depends(get_token_from_cookie), db: AsyncIOMotorDatabase = Depends(get_db)
+    token: str = Depends(get_token_from_header), db: AsyncIOMotorDatabase = Depends(get_db)
 ):
     payload = decode_access_token(token)
     if not payload:

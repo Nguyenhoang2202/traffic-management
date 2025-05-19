@@ -71,7 +71,7 @@ async def send_data(device_id: str):
     # print(f"✅ Đã lưu dữ liệu lên DB: {data}")
 
 # ====== HÀM TỰ ĐỘNG GỬI DỮ LIỆU ======
-async def auto_send_data(time_interval: int = 10):
+async def auto_send_data(time_interval: int = 3600):
     while True:
         for device_id in connecting_devices:
             await send_data(device_id=device_id)

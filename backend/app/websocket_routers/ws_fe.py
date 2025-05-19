@@ -41,6 +41,13 @@ async def websocket_fe(websocket: WebSocket):
             data_to_send = []
 
             for device_id, device in paged_devices:
+                # traffic light
+                last_data = device["last_data"]
+                light_state = last_data["traffic_light"]["state"]
+                remaining_time = last_data["traffic_light"]["remaining_time"]
+                mode = last_data["mode"]
+                auto_mode = last_data["auto_mode"]
+                # detect data
                 last_detect_data = device.get("last_detect_data", {})
                 img_detected = last_detect_data.get("img_detected")
                 num_current = last_detect_data.get("num_current")
@@ -49,11 +56,15 @@ async def websocket_fe(websocket: WebSocket):
 
                 if img_detected:
                     data_to_send.append({
+                        "light_state":light_state,
+                        "remaining_time":remaining_time,
                         "device_id": device_id,
                         "img_detected": img_detected,
                         "num_current": num_current,
                         "num_total": num_total,
-                        "cover_ratio": cover_ratio
+                        "cover_ratio": cover_ratio,
+                        "mode":mode,
+                        "auto_mode":auto_mode,
                     })
 
             await websocket.send_text(json.dumps({

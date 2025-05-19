@@ -32,8 +32,25 @@ class createUser(BaseModel):
 class updateUser(BaseModel):
     username: Optional[str] = None
     email: Optional[str] = None
-    password: Optional[str] = None
-    role: Optional[UserRole] = UserRole.viewer   # có thể cập nhật vai trò
+
+class updateRoleUser(BaseModel):
+    role: UserRole
+
+class updatePasswordUser(BaseModel):
+    old_password: Optional[str] = None
+    new_password: Optional[str] = None
+
+class responseUser(BaseModel):
+    id: Optional[str] = Field(None)  # nếu lưu MongoDB
+    @root_validator(pre=True)
+    def populate_id(cls, values):
+        if "_id" in values:
+            values["id"] = str(values["_id"])  # ánh xạ thủ công
+        return values
+    username: str
+    email: str
+    role: UserRole = UserRole.viewer  # mặc định là viewer
+    created_at: datetime = Field(default_factory=datetime.utcnow)
 
 class loginUser(BaseModel):
     username: str

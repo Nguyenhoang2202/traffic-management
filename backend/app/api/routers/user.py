@@ -1,6 +1,6 @@
 from fastapi import APIRouter, Depends, HTTPException, Response
 from typing import List
-from ..models import User, TokenResponse
+from ..models import User, TokenResponse,responseUser
 from ..crud.user import *
 from ...database.database import get_db
 from ...auth.authorization import *
@@ -35,7 +35,7 @@ def logout(response: Response):
     return {"message": "Logged out successfully"}
 
 # Get all user
-@router.get("/", response_model=List[User])
+@router.get("/", response_model=List[responseUser])
 async def read_users(current_user: User = Depends(get_current_user),skip:int= 0,limit:int=100,db: AsyncIOMotorDatabase = Depends(get_db)):
     check_role(current_user.role, ["admin","supervisor"])
     try:
@@ -43,33 +43,62 @@ async def read_users(current_user: User = Depends(get_current_user),skip:int= 0,
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
-# Get user by name
-@router.get("/current_user", response_model=User)
+# Get current user
+@router.get("/current_user/", response_model=responseUser)
 async def read_user(current_user: User = Depends(get_current_user), db: AsyncIOMotorDatabase = Depends(get_db)):
     try:
         return await get_user(db=db, username=current_user.username)
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
     
+@router.get("/user_id/{user_id}", response_model=responseUser)
+async def read_user(user_id:str,current_user: User = Depends(get_current_user), db: AsyncIOMotorDatabase = Depends(get_db)):
+    check_role(current_user.role, ["admin","supervisor"])
+    try:
+        return await get_user_by_id(db=db, user_id=user_id)
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+    
 # Get user by role
-@router.get("/{role}", response_model=User)
+@router.get("/{role}", response_model=List[responseUser])
 async def read_users_by_role(role:str, current_user: User = Depends(get_current_user), skip: int = 0, limit: int = 100, db: AsyncIOMotorDatabase = Depends(get_db)):
-    check_role(current_user.role, ["admin"])
+    check_role(current_user.role, ["admin","supervisor"])
     try:
         return await get_all_users_by_role(db=db,role=role,skip=skip,limit=limit)
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
     
 # Put user
-@router.put("/{username}", response_model=User)
-async def put_user(username: str, user_data: updateUser, current_user: User = Depends(get_current_user), db: AsyncIOMotorDatabase = Depends(get_db)):
-    if (current_user.role != "admin") and (user_data.role != "viewer"):
-        raise HTTPException(status_code=403, detail="You are not allowed to update role up!")
-    try:
-        return await update_user(db=db, username=username, user_data=user_data)
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
-    
+@router.put("/me/", response_model=responseUser)
+async def update_current_user(
+    user_data: updateUser,
+    current_user: User = Depends(get_current_user),
+    db: AsyncIOMotorDatabase = Depends(get_db),
+):
+    # Chỉ user đang đăng nhập được tự sửa thông tin
+    return await update_user(db, current_user.username, user_data)
+
+
+@router.put("/me/password/", response_model=responseUser)
+async def update_current_user_password(
+    user_data: updatePasswordUser,
+    current_user: User = Depends(get_current_user),
+    db: AsyncIOMotorDatabase = Depends(get_db),
+):
+    return await update_user_password(db, current_user.username, user_data)
+
+
+@router.put("/role/{username}", response_model=responseUser)
+async def update_role(
+    username: str,
+    user_data: updateRoleUser,
+    current_user: User = Depends(get_current_user),
+    db: AsyncIOMotorDatabase = Depends(get_db),
+):
+    check_role(current_user.role, ["admin"])  # Bắt buộc phải là admin mới được đổi role
+    return await update_user_role(db, username, user_data)
+
+# Delete
 @router.delete("/{username}")
 async def unactive_user(username: str,current_user: User = Depends(get_current_user), db: AsyncIOMotorDatabase = Depends(get_db)):
     check_role(current_user.role, ["admin"])
