@@ -4,6 +4,7 @@ from app.core.app_instance import app
 from app.analysis.traffic_analysis import run_all_analysis_tasks_forever
 from app.detect.detect_data import run_all_detect_tasks_forever
 from app.database.database import auto_send_data
+from app.predict.predict import run_all_predict_tasks_forever
 
 
 async def run_server():
@@ -21,6 +22,7 @@ if __name__ == "__main__":
             asyncio.create_task(run_all_analysis_tasks_forever())
             asyncio.create_task(run_all_detect_tasks_forever())
             asyncio.create_task(auto_send_data())  # Thay đổi thời gian gửi dữ liệu nếu cần thiết
+            asyncio.create_task(run_all_predict_tasks_forever()) 
             # Giữ event loop sống
             while True:
                 await asyncio.sleep(5)

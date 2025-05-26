@@ -92,3 +92,59 @@ async def export_data(camera_id:str,skip: int = 0, limit: int = 100, db: AsyncIO
 
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
+    
+
+# Spam fake data cho thiết bị
+from fastapi import UploadFile, File
+from bson import ObjectId
+
+@router.post("/import/")
+async def import_traffic_data(file: UploadFile = File(...), db: AsyncIOMotorDatabase = Depends(get_db)):
+    try:
+        # Kiểm tra định dạng
+        if not file.filename.endswith(".json"):
+            raise HTTPException(status_code=400, detail="Chỉ chấp nhận file JSON")
+
+        # Đọc nội dung file vào DataFrame
+        contents = await file.read()
+        df = pd.read_json(io.BytesIO(contents), orient="records")
+
+        # Loại bỏ cột _id nếu có (MongoDB sẽ tự tạo)
+        if "_id" in df.columns:
+            df.drop(columns=["_id"], inplace=True)
+
+        # Chuyển đổi DataFrame thành list dict
+        records = df.to_dict(orient="records")
+
+        if not records:
+            raise HTTPException(status_code=400, detail="Không có bản ghi nào trong file")
+
+        # Gọi CRUD để insert
+        from ..crud.traffic_data import insert_many_traffic_data
+        result = await insert_many_traffic_data(db=db, data_list=records)
+
+        return {"message": "Import thành công", "inserted_count": len(result.inserted_ids)}
+
+    except ValueError:
+        raise HTTPException(status_code=400, detail="Định dạng JSON không hợp lệ")
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+    
+@router.get("/count/count_datas")
+async def count_datas(db: AsyncIOMotorDatabase = Depends(get_db)):
+    try:
+        count = await db["traffic_data"].count_documents({})
+        return {"total_documents": count}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+@router.delete("/datas/clear_all")
+async def clear_all_traffic_data(db: AsyncIOMotorDatabase = Depends(get_db)):
+    try:
+        result = await db["traffic_data"].delete_many({})
+        return {
+            "message": "Đã xóa toàn bộ dữ liệu",
+            "deleted_count": result.deleted_count
+        }
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))

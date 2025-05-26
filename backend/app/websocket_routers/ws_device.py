@@ -34,7 +34,16 @@ async def websocket_endpoint(websocket: WebSocket):
                     device_id = packet.get("device_id")
                     gps = packet.get("gps", {})
                     #
-                    connecting_devices[device_id] = {"websocket": websocket, "last_data": {},"last_detect_data": {},"last_analyze_data":{}, "reset_detect": False, "reset_analyze": False}
+                    connecting_devices[device_id] = {
+                        "websocket": websocket,
+                          "last_data": {},
+                          "last_detect_data": {},
+                          "last_analyze_data":{}, 
+                          "last_predict_data": {},# Test
+                          "reset_detect": False, 
+                          "reset_analyze": False,
+                          "reset_predict": True,# Test
+                        }
                     #
                     print(f"Nhận đăng ký từ thiết bị {device_id}, vị trí: {gps}")
 

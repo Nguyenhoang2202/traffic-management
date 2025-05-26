@@ -2,13 +2,18 @@ from app.websocket_routers.device_connecting import connecting_devices
 from app.analysis.manager import send_command_to_device
 import asyncio
 
-def calculate_green_time(cover_ratio: float, num_current: int, road_width: float, min_time: int = 15, max_time: int = 90) -> int:
+def calculate_green_time(cover_ratio: float, num_current: int, predict_value: int,road_width: float, min_time: int = 15, max_time: int = 90) -> int:
     # 
     time_car = 3
     g_time1 = num_current*time_car/road_width
     g_time2 = cover_ratio*(max_time - min_time)
+
+    predict_per_cycle = predict_value / 60  # Dự đoán số lượng xe trong 1 phút
+
+    # Tính thời gian xanh cần cho lượng xe dự đoán
+    g_time3 = predict_per_cycle * time_car / road_width
     # Tính thời gian đèn xanh dựa trên traffic_score
-    green_time = int(0.5*g_time1 + 0.5*g_time2)
+    green_time = int((0.4 * g_time1) + (0.3 * g_time2) + (0.3 * g_time3))
     # Giới hạn thời gian
     green_time = max(min_time, min(green_time, max_time))# Nếu thấp hơn min_time thì lấy min (max tương tự)
     return green_time
@@ -48,6 +53,11 @@ async def traffic_flow_analysis(device_id):
         # Lấy thông tin thiết bị
         num_current = last_detect_data["num_current"]
         cover_ratio = last_detect_data["cover_ratio"]
+        # Lấy dự đoán gần nhất nếu có
+        predict_value = device["last_predict"]
+        if predict_value is None:
+            print(f"⚠️ Thiết bị {device_id} chưa có dữ liệu dự đoán, bỏ qua vòng lặp.")
+            continue
 
         # Không phân tích 
         if mode == 1 or state != 0 or auto_mode == 0:
@@ -56,7 +66,7 @@ async def traffic_flow_analysis(device_id):
         # Trong thời gian đèn đỏ, nếu còn >= 3s → phân tích
         if remaining_time >= 3:
             print("analysis")
-            green_time = calculate_green_time(cover_ratio=cover_ratio,num_current=num_current,road_width=3.5,)
+            green_time = calculate_green_time(cover_ratio=cover_ratio,num_current=num_current,predict_value=predict_value,road_width=3.5,)
             continue
 
         # Khi đếm ngược còn < 3 giây và chưa gửi lệnh → gửi

@@ -67,6 +67,7 @@ async def send_data(device_id: str):
     # Reset lại dữ liệu sau khi đã gửi lên DB
     connecting_devices[device_id]["reset_detect"] = True
     connecting_devices[device_id]["reset_analyze"] = True
+    connecting_devices[device_id]["reset_predict"] = True #Test
 
     # print(f"✅ Đã lưu dữ liệu lên DB: {data}")
 

@@ -3,7 +3,12 @@ from app.websocket_routers.ws_fe import ws_fe_router
 from app.websocket_routers.ws_device import ws_device_router
 from app.api.routers import camera,traffic_data,user,command
 from fastapi.middleware.cors import CORSMiddleware
+
+from app.predict.load_model import load_model_and_scaler
+
 app = FastAPI()
+
+load_model_and_scaler()
 
 app.include_router(ws_fe_router)
 app.include_router(ws_device_router)
