@@ -39,16 +39,16 @@ const TrafficMonitor = () => {
     const [mode, setMode] = useState<"command" | null>(null)
     // Các camera
     const [devices, setDevices] = useState<DeviceData[]>([]);
-    // Khởi tạo trang
     useEffect(() => {
         const wsClient = new WebSocketClient((data) => {
             setDevices(data);
-        }, 1, 4); // page = 1, pageSize = 4
+        }, 1, 4);
 
         return () => {
-            wsClient.close();
+            wsClient.closeManually(); // Chỉ đóng nếu thật sự muốn ngắt toàn bộ
         };
     }, []);
+
     // Hàm theo dõi thay đổi dữ liệu trong form
     const formPostChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const { name, value } = e.target;

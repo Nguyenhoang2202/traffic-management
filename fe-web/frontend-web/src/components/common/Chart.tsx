@@ -21,7 +21,7 @@ interface ChartRendererProps {
     data: any[];
     dataKeyX?: string;
     dataKeyY?: string | string[];
-    dataKeyLabels?: Record<string, string>; // 👈 thêm để đổi tên các key
+    dataKeyLabels?: Record<string, string>; // thêm để đổi tên các key
     dataKeyPieName?: string;
     dataKeyPieValue?: string;
     colors?: string[];
@@ -33,7 +33,7 @@ const ChartRenderer = ({
     data,
     dataKeyX = "name",
     dataKeyY = "value",
-    dataKeyLabels = {}, // 👈 mặc định rỗng
+    dataKeyLabels = {}, // mặc định rỗng
     dataKeyPieName = "name",
     dataKeyPieValue = "value",
     colors = ["#8884d8", "#82ca9d", "#ffc658", "#ff7300"],
@@ -61,7 +61,7 @@ const ChartRenderer = ({
                             key={key}
                             type="monotone"
                             dataKey={key}
-                            name={dataKeyLabels[key] || key} // 👈 dùng tên custom nếu có
+                            name={dataKeyLabels[key] || key} // dùng tên custom nếu có
                             stroke={colors[index % colors.length]}
                             strokeWidth={3}
                             dot={false}
@@ -84,7 +84,7 @@ const ChartRenderer = ({
                         <Bar
                             key={key}
                             dataKey={key}
-                            name={dataKeyLabels[key] || key} // 👈 tên custom
+                            name={dataKeyLabels[key] || key} // tên custom
                             fill={colors[index % colors.length]}
                         />
                     ))}

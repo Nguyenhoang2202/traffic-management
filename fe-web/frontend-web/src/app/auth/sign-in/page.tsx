@@ -29,7 +29,7 @@ const SignIn = () => {
         const success = await signin(Data);
         if (success) {
             console.log("Đăng nhập thành công");
-            router.push('/dashboard/index'); // ✅ Chuyển hướng sau khi đăng nhập thành công
+            router.push('/dashboard/index'); // Chuyển hướng sau khi đăng nhập thành công
         }
     };
 

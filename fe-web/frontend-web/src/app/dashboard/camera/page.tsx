@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import { getCameras } from '@/lib/api/camera/get_cameras';
 import StatusMap from '@/components/common/Map';
 import { WebSocketClient } from "@/lib/api/websocket/wsClient";
@@ -37,31 +37,67 @@ const MapCamera = () => {
     const [viewPos, setViewPos] = useState<{ lat: number; lng: number } | null>(null);
     const [getClick, setGetClick] = useState<boolean>(false);
     const [devices, setDevices] = useState<DeviceData[]>([]);
+    // Fake data
+    const statusIndexRef = useRef(0);
+    const statusCycle: CameraWithStatus['status'][] = ['active', 'warning', 'offline'];
+    // --
     useEffect(() => {
         const wsClient = new WebSocketClient((data) => {
             setDevices(data);
         }, 1, 10);
 
         return () => {
-            wsClient.close();
+            wsClient.closeManually();
         };
     }, []);
+
+    // useEffect(() => {
+    //     const fetchCamera = async () => {
+    //         try {
+    //             const rawData: RawCameraData[] = await getCameras();
+
+    //             const processedData: CameraWithStatus[] = rawData.map((cam, index) => ({
+    //                 device_id: cam.device_id,
+    //                 lat: cam.latitude,
+    //                 lng: cam.longitude,
+    //                 label: `Camera ${cam.device_id}: offline`, // hoặc `Camera ${cam.device_id}`
+    //                 status: 'offline', // bạn có thể thay đổi logic ở đây
+    //             }));
+
+    //             setCameras(processedData);
+
+    //             // Set center map từ camera đầu tiên
+    //             if (processedData.length > 0) {
+    //                 setMapCenter({ lat: processedData[0].lat, lng: processedData[0].lng });
+    //             }
+    //         } catch (error) {
+    //             console.error('Error getting cameras:', error);
+    //         }
+    //     };
+
+    //     fetchCamera();
+    // }, []);
+    // Fake data
     useEffect(() => {
         const fetchCamera = async () => {
             try {
                 const rawData: RawCameraData[] = await getCameras();
 
-                const processedData: CameraWithStatus[] = rawData.map((cam, index) => ({
-                    device_id: cam.device_id,
-                    lat: cam.latitude,
-                    lng: cam.longitude,
-                    label: `Camera ${cam.device_id}: offline`, // hoặc `Camera ${cam.device_id}`
-                    status: 'offline', // bạn có thể thay đổi logic ở đây
-                }));
+                const statusCycle: CameraWithStatus['status'][] = ['active', 'warning', 'offline'];
+
+                const processedData: CameraWithStatus[] = rawData.map((cam, index) => {
+                    const status = statusCycle[index % statusCycle.length];
+                    return {
+                        device_id: cam.device_id,
+                        lat: cam.latitude,
+                        lng: cam.longitude,
+                        label: `Camera ${cam.device_id}: ${status}`,
+                        status,
+                    };
+                });
 
                 setCameras(processedData);
 
-                // Set center map từ camera đầu tiên
                 if (processedData.length > 0) {
                     setMapCenter({ lat: processedData[0].lat, lng: processedData[0].lng });
                 }
@@ -72,6 +108,10 @@ const MapCamera = () => {
 
         fetchCamera();
     }, []);
+
+    // --
+
+
     useEffect(() => {
         if (devices.length === 0 || cameras.length === 0) return;
         console.log(`cameras: ${cameras},devices:${devices}`)
@@ -93,6 +133,7 @@ const MapCamera = () => {
 
         setCameras(updatedCameras);
     }, [devices]);
+
     const changeCameraLocation = (device_id: string) => {
         const camera = cameras.find(cam => cam.device_id === device_id);
         if (camera) {

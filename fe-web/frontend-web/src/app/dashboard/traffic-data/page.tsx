@@ -3,6 +3,8 @@ import { useEffect, useState } from "react";
 import style from '@/app/dashboard/traffic-data/traffic_data.module.scss'
 import { getDatas } from '@/lib/api/traffic-data/get_traffic_datas'
 import { getData } from '@/lib/api/traffic-data/get_traffic_data'
+import { getPredictDatas } from '@/lib/api/predict-data/get_predict_datas'
+import { getPredictData } from '@/lib/api/predict-data/get_predict_data'
 import { downloadExcelData } from '@/lib/api/traffic-data/get_excel_traffic_data'
 import { downloadExcelDatas } from '@/lib/api/traffic-data/get_excel_traffic_datas'
 import ChartRenderer from "@/components/common/Chart";
@@ -11,11 +13,13 @@ import ParameterBoardRender from "@/components/common/Parameter_board";
 
 const TrafficData = () => {
     const [trafficData, setTrafficData] = useState<any[]>([])
+    const [predictData, setPredictData] = useState<any[]>([])
     // Khởi tạo dữ liệu
     useEffect(() => {
         const getAllData = async () => {
             try {
-                const rawData = await getDatas();
+                const rawData = await getData("C1");
+                const rawPredictData = await getPredictData("C1");
                 const processed = rawData.map((d: any) => ({
                     ...d,
                     timestamp: new Date(d.timestamp).toLocaleTimeString([], {
@@ -24,6 +28,14 @@ const TrafficData = () => {
                     }),
                 }));
                 setTrafficData(processed);
+                const PredictProcessed = rawPredictData.map((d: any) => ({
+                    ...d,
+                    predict_for_time: new Date(d.predict_for_time).toLocaleTimeString([], {
+                        hour: '2-digit',
+                        minute: '2-digit'
+                    }),
+                }));
+                setPredictData(PredictProcessed);
             } catch (error) {
                 console.error('Error traffic_data get all:', error);
             }
@@ -60,6 +72,18 @@ const TrafficData = () => {
                         dataKeyLabels={{
                             num_total: "Tổng lưu lượng xe",
                             average_green_time: "Thời gian đèn xanh trung bình"
+                        }}
+                    />
+                </div>
+                <div className={style.predict_chart}>
+                    <ChartRenderer
+                        type="line"
+                        data={predictData}
+                        dataKeyX="predict_for_time"
+                        dataKeyY={"prediction"}
+                        colors={["#FFD405"]}
+                        dataKeyLabels={{
+                            prediction: "Tổng lưu lượng xe dự đoán"
                         }}
                     />
                 </div>

@@ -4,12 +4,12 @@ import { useRouter } from "next/navigation";
 import { useState } from "react";
 import style from "./sign-up.module.scss";
 import Link from "next/link";
-import Form from "@/components/common/Form";
+import Form, { FieldType } from "@/components/common/Form";
 
 const formSignIn = [
-    { name: 'username', type: 'text', label: 'Username', },
-    { name: 'email', type: 'email', label: 'Email', },
-    { name: 'password', type: 'password', label: 'Password', }
+    { name: 'username', type: 'text' as FieldType, label: 'Username', },
+    { name: 'email', type: 'email' as FieldType, label: 'Email', },
+    { name: 'password', type: 'password' as FieldType, label: 'Password', }
 ];
 
 
@@ -31,7 +31,7 @@ const SignUp = () => {
         const success = await signup(Data);
         if (success) {
             console.log("Đăng ký thành công");
-            router.push('/dashboard/index'); // ✅ Chuyển hướng sau khi đăng nhập thành công
+            router.push('/dashboard/index'); //Chuyển hướng sau khi đăng nhập thành công
         }
     };
 

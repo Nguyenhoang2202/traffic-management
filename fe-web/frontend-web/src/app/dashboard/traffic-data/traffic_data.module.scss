@@ -46,6 +46,7 @@
         grid-template-areas:
             "title title"
             "total parameter"
+            "predict parameter"
             "rain parameter";
         grid-template-columns: 75% 25%;
         grid-template-rows: auto 1fr;
@@ -79,6 +80,12 @@
             margin-bottom: 1rem;
 
             // Có thể thêm responsive hoặc style biểu đồ tại đây
+        }
+
+        .predict_chart {
+            width: 100%;
+            grid-area: predict;
+            margin-bottom: 1rem;
         }
 
         .rain_chart {
@@ -136,6 +143,7 @@
             grid-template-areas:
                 "title"
                 "total"
+                "predict"
                 "rain"
                 "parameter";
             grid-template-columns: 100%;
