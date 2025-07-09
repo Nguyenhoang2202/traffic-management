@@ -21,3 +21,12 @@ async def get_data(db: AsyncIOMotorDatabase, device_id:str, skip: int = 0, limit
     data = [doc async for doc in cursor]
     data.reverse()
     return data
+
+async def insert_many_traffic_data(db: AsyncIOMotorDatabase, data_list: list):
+    collection = db["data_records"]
+
+    # Xóa trường _id nếu có trong từng dict
+    cleaned_data = [{k: v for k, v in item.items() if k != "_id"} for item in data_list]
+
+    result = await collection.insert_many(cleaned_data)
+    return result

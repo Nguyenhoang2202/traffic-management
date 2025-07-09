@@ -71,12 +71,14 @@ async def websocket_fe(websocket: WebSocket):
                 "type": "batch_detect",
                 "data": data_to_send
             }))
-
             await asyncio.sleep(0.04)  # khoảng 25 fps
 
     except Exception as e:
         print(f"❌ Lỗi WebSocket file rpi_connect: {e}")
     finally:
-        if websocket.client_state == WebSocketState.CONNECTED:
+        try:
             await websocket.close()
+        except RuntimeError:
+            # Đã đóng rồi thì bỏ qua, không cần làm gì cả
+            pass
         print("🔌 Đã đóng kết nối WebSocket /ws/fe")

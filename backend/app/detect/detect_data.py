@@ -74,6 +74,21 @@ def is_inside_roi(x_center, y_center, roi_polygon):
     return cv2.pointPolygonTest(roi_polygon, (x_center, y_center), False) >= 0
 
 #-----------------------------------------------------
+def get_center_line(roi_points):
+    # Lấy điểm giữa cạnh dưới và cạnh trên
+    top_mid = ((roi_points[0][0] + roi_points[1][0]) // 2,
+               (roi_points[0][1] + roi_points[1][1]) // 2)
+    bottom_mid = ((roi_points[2][0] + roi_points[3][0]) // 2,
+                  (roi_points[2][1] + roi_points[3][1]) // 2)
+    return top_mid, bottom_mid
+
+def has_crossed_line(prev, curr, line_start, line_end):
+    # Tính cross product để biết 2 điểm ở 2 bên vạch không
+    def cross(a, b, c):
+        return (b[0] - a[0]) * (c[1] - a[1]) - (b[1] - a[1]) * (c[0] - a[0])
+    return cross(line_start, line_end, prev) * cross(line_start, line_end, curr) < 0
+
+#-----------------------------------------------------
 async def object_detection(device_id):
     # Khởi tạo tracker SORT
     # max_age: số frame tối đa mà một đối tượng có thể không được phát hiện trước khi bị xóa khỏi tracker
@@ -83,6 +98,10 @@ async def object_detection(device_id):
     
     roi_polygon, frame = select_roi(firstFrame)# Gọi hàm lấy polygon vẽ mark
     print("Selected ROI Points:", roi_polygon.tolist())
+
+    # Tạo line đếm xe
+    # 
+    line_start, line_end = get_center_line(roi_polygon)
 
     # Lấy chiều rộng của đường
     # road_width = get_road_width(roi_polygon=roi_polygon)
@@ -96,12 +115,15 @@ async def object_detection(device_id):
     x_offset, y_offset, w_mask, h_mask = cv2.boundingRect(roi_polygon)
     current_ids = set()
     crossed_ids = set()
+    prev_positions = {} # Lưu trữ tọa độ trung tâm của các đối tượng đã phát hiện
 
 
     while True:
         # Check reset_detect
         if connecting_devices[device_id]["reset_detect"]:
             tracker.reset()
+            crossed_ids.clear()       # reset bộ ID đã băng qua
+            prev_positions.clear()    # reset vị trí đối tượng trước đó
             connecting_devices[device_id]["reset_detect"] = False
             print(f"Đã reset_detect tracker cho thiết bị {device_id}")
 
@@ -149,17 +171,28 @@ async def object_detection(device_id):
     
             for *bbox, track_id in tracks.astype(int):
                 x1, y1, x2, y2 = bbox
+                x_center = (x1 + x2) // 2
+                y_center = (y1 + y2) // 2
+                center = (x_center, y_center)
+
+                # Vẽ box và ID
                 cv2.rectangle(frame, (x1, y1), (x2, y2), (0, 255, 0), 2)
-                cv2.putText(frame, f"ID:{track_id}", (x1, y1 - 10),
-                            cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 255, 0), 2)
+                cv2.putText(frame, f"ID:{track_id}", (x1, y1 - 10), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 255, 0), 2)
 
                 current_ids.add(track_id)
-                if track_id not in crossed_ids:
-                    crossed_ids.add(track_id)
 
-                # Vẽ vùng phương tiện lên mask #DTCP
+                # Kiểm tra xem có băng qua line không
+                if track_id in prev_positions:
+                    if has_crossed_line(prev_positions[track_id], center, line_start, line_end):
+                        if track_id not in crossed_ids:
+                            crossed_ids.add(track_id)
+
+
+                prev_positions[track_id] = center
+
+                # Vẽ lên mask
                 cv2.rectangle(vehicles_mask, (x1, y1), (x2, y2), 255, -1)
-            
+
             # Tạo mask chỉ giữ lại phần nằm trong ROI #DTCP # Phần ROI
             roi_only_mask = np.zeros(frame.shape[:2], dtype=np.uint8)
             cv2.fillPoly(roi_only_mask, [roi_polygon], 255)
@@ -176,13 +209,14 @@ async def object_detection(device_id):
             current_ids.clear()
 
             # In và hiển thị kết quả
-            cv2.polylines(frame, [roi_polygon], isClosed=True, color=(0, 0, 255), thickness=2)
+            cv2.polylines(frame, [roi_polygon], isClosed=True, color=(255, 0, 0), thickness=2)
             cv2.putText(frame, f"Current: {num_current}", (10, 30),
                     cv2.FONT_HERSHEY_SIMPLEX, 0.7, (0, 255, 255), 2)
             cv2.putText(frame, f"Total: {num_total}", (10, 60),
                         cv2.FONT_HERSHEY_SIMPLEX, 0.7, (0, 255, 255), 2)
             cv2.putText(frame, f"Cover: {cover_ratio:.2f}%", (10, 90),
                         cv2.FONT_HERSHEY_SIMPLEX, 0.7, (255, 100, 100), 2)
+            cv2.line(frame, line_start, line_end, (0, 0, 255), 2)
             
             if frame is not None:
                 _, buffer = cv2.imencode(".jpg", frame)

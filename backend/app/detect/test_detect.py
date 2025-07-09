@@ -43,9 +43,26 @@ def select_roi(cap):
 # Hàm kiểm tra đối tượng có nằm trong vùng không
 def is_inside_roi(x_center, y_center, roi_polygon):
     return cv2.pointPolygonTest(roi_polygon, (x_center, y_center), False) >= 0
+# ------------------------------------------------------------------------------------------------------------------
+def get_center_line(roi_points):
+    # Lấy điểm giữa cạnh dưới và cạnh trên
+    top_mid = ((roi_points[0][0] + roi_points[1][0]) // 2,
+               (roi_points[0][1] + roi_points[1][1]) // 2)
+    bottom_mid = ((roi_points[2][0] + roi_points[3][0]) // 2,
+                  (roi_points[2][1] + roi_points[3][1]) // 2)
+    return top_mid, bottom_mid
 
+def has_crossed_line(prev, curr, line_start, line_end):
+    # Tính cross product để biết 2 điểm ở 2 bên vạch không
+    def cross(a, b, c):
+        return (b[0] - a[0]) * (c[1] - a[1]) - (b[1] - a[1]) * (c[0] - a[0])
+    return cross(line_start, line_end, prev) * cross(line_start, line_end, curr) < 0
+
+
+
+# ------------------------------------------------------------------------------------------------------------------
 # VIDEO_SOURCE= "app/detect/highway.mp4"
-def analyze_video_stream(video_source="app/detect/q.mp4"):
+def analyze_video_stream(video_source="app/detect/videos/cars.mp4"):
     # 
     cap = cv2.VideoCapture(video_source)
     if not cap.isOpened():
@@ -61,12 +78,25 @@ def analyze_video_stream(video_source="app/detect/q.mp4"):
         if not cap.isOpened():
             raise RuntimeError("Cannot reopen video after ROI selection")
 
+    # Lấy thông tin khung hình video
+    fps = cap.get(cv2.CAP_PROP_FPS)
+    width = int(cap.get(cv2.CAP_PROP_FRAME_WIDTH))
+    height = int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
+
+    # Đường dẫn và codec video đầu ra
+    fourcc = cv2.VideoWriter_fourcc(*'mp4v')  # Codec cho .mp4
+    out = cv2.VideoWriter('output_analyzed.mp4', fourcc, fps, (width, height))
+
     # Tạo mark cho ROI
     mask = np.zeros(frame.shape[:2], dtype=np.uint8)# tạo full nền đen cùng kích thước
     cv2.fillPoly(mask, [roi_polygon], 255)# điền trắng phần ROI
 
     x_offset, y_offset, w_mask, h_mask = cv2.boundingRect(roi_polygon)# Lấy hình vuông bao bên ngoài
+    # 
+    line_start, line_end = get_center_line(roi_polygon)
 
+    prev_positions = {}
+    # 
     current_ids = set()
     crossed_ids = set()
 
@@ -112,16 +142,26 @@ def analyze_video_stream(video_source="app/detect/q.mp4"):
         #
         for *bbox, track_id in tracks.astype(int):
             x1, y1, x2, y2 = bbox
+            x_center = (x1 + x2) // 2
+            y_center = (y1 + y2) // 2
+            center = (x_center, y_center)
+
+            # Vẽ bounding box
             cv2.rectangle(frame, (x1, y1), (x2, y2), (0, 255, 0), 2)
             cv2.putText(frame, f"ID:{track_id}", (x1, y1 - 10),
                         cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 255, 0), 2)
 
-            current_ids.add(track_id)
-            if track_id not in crossed_ids:
-                crossed_ids.add(track_id)
+            if track_id in prev_positions:
+                if has_crossed_line(prev_positions[track_id], center, line_start, line_end):
+                    if track_id not in crossed_ids:
+                        crossed_ids.add(track_id)
+
+            prev_positions[track_id] = center
 
         num_current = len(current_ids)
         num_total = len(crossed_ids)
+
+        cv2.line(frame, line_start, line_end, (0, 0, 255), 2)
 
         cv2.putText(frame, f"Current: {num_current}", (10, 30),
                     cv2.FONT_HERSHEY_SIMPLEX, 0.7, (0, 255, 255), 2)
@@ -131,10 +171,14 @@ def analyze_video_stream(video_source="app/detect/q.mp4"):
         current_ids.clear()
 
         cv2.imshow("YOLOv8 + SORT Tracking with ROI", frame)
+        out.write(frame)
+
         if cv2.waitKey(1) & 0xFF == ord('q'):
             break
 
     cap.release()
+    out.release()
+
     cv2.destroyAllWindows()
     return {
         "roi_points": roi_polygon.tolist(),

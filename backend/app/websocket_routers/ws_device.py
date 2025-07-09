@@ -11,6 +11,8 @@ from app.database.database import save_camera_info
 
 ws_device_router = APIRouter()
 
+# Cập nhật từng phần nếu có dữ liệu
+allowed_fields = ["image", "rain", "mode", "auto_mode","timestamp"]
 @ws_device_router.websocket("/ws")
 async def websocket_endpoint(websocket: WebSocket):
     await websocket.accept()
@@ -20,7 +22,7 @@ async def websocket_endpoint(websocket: WebSocket):
         while True:
             data = await websocket.receive_text()
             # print("📥 Nhận dữ liệu từ client.")
-
+        
             try:
                 packet = json.loads(data)
             except json.JSONDecodeError:
@@ -39,10 +41,10 @@ async def websocket_endpoint(websocket: WebSocket):
                           "last_data": {},
                           "last_detect_data": {},
                           "last_analyze_data":{}, 
-                          "last_predict_data": {},# Test
+                          "last_predict_data": 50,# Test
                           "reset_detect": False, 
                           "reset_analyze": False,
-                          "reset_predict": True,# Test
+                          "reset_predict": False,# Test
                         }
                     #
                     print(f"Nhận đăng ký từ thiết bị {device_id}, vị trí: {gps}")
@@ -66,9 +68,6 @@ async def websocket_endpoint(websocket: WebSocket):
                     
                     last_data = connecting_devices[device_id]["last_data"]
 
-                    # Cập nhật từng phần nếu có dữ liệu
-                    allowed_fields = ["image", "rain", "mode", "auto_mode","timestamp"]
-
                     for field in allowed_fields:
                         value = packet.get(field)
                         if value is not None:
@@ -88,6 +87,7 @@ async def websocket_endpoint(websocket: WebSocket):
                     # display_image_from_base64(image)
                 else:
                     print("⚠️ Gói tin không hợp lệ hoặc thiếu type=data.")
+                await asyncio.sleep(0.04)
 
     except Exception as e:
         print(f"❌ Lỗi file rpi_connect: {e}")

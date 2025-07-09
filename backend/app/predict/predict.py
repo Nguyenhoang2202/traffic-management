@@ -44,7 +44,7 @@ async def predict_and_save(device_id):
     predict_collection = db[PREDICT_COLLECTION_NAME]
 
     while True:
-        print(f"🔄 Bắt đầu task dự đoán 2")
+        print("Có chạy predict")
         while not device.get("reset_predict"):
             await asyncio.sleep(1)
 
@@ -75,7 +75,7 @@ async def predict_and_save(device_id):
             prediction = model(input_tensor).item()
 
         print(f"✅ Dự đoán lưu lượng: {prediction:.2f}")
-        device["last_predict"] = prediction
+        device["last_predict_data"] = prediction
 
         future_time = create_time + timedelta(hours=1)
         
