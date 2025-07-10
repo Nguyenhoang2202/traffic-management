@@ -1,0 +1,52 @@
+@import "base.scss";
+
+.footer {
+    width: 100%;
+    padding: 1.5rem;
+    border-top: 1px solid #dcdcdc;
+    background-color: $background;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 2rem;
+
+}
+
+.footer_section {
+    margin: 0 0 12px 0;
+
+    h4 {
+        margin: 12px 0;
+        color: $color;
+        padding-bottom: 5px;
+        border-bottom: 1px solid white;
+
+        font: {
+            family: Helvetica, sans-serif;
+            size: 18px;
+            weight: bold;
+        }
+
+    }
+
+    ul {
+        list-style: none;
+        padding: 0;
+
+        li {
+            margin-bottom: 4px;
+
+            font: {
+                family: Helvetica, sans-serif;
+                size: 15px;
+                weight: bold;
+            }
+
+            color: $color;
+
+            &:hover {
+                background-color: $hover;
+                cursor: pointer;
+            }
+        }
+    }
+}

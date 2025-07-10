@@ -1,0 +1,38 @@
+.container {
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    min-height: 80vh;
+    padding: 1rem;
+    position: relative;
+
+    .title {
+        text-align: center;
+        margin-bottom: 1rem;
+    }
+
+    .selectUser {
+        margin-bottom: 1rem;
+
+        label {
+            font: {
+                family: Helvetica, sans-serif;
+                size: 18px;
+                weight: bold;
+            }
+        }
+
+        select {
+            padding: 0.5rem;
+            border-radius: 5px;
+        }
+    }
+
+    .tableContainer {
+        width: 100%;
+        height: auto;
+        overflow: auto;
+        border: 1px solid gray;
+        max-height: 80vh;
+    }
+}

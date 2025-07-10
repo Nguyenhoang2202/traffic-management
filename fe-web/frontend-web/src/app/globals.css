@@ -1,0 +1,47 @@
+* {
+  padding: 0;
+  margin: 0;
+  box-sizing: border-box;
+}
+
+@keyframes pulse {
+  0% {
+    transform: scale(1);
+    opacity: 0.5;
+  }
+
+  50% {
+    transform: scale(2.5);
+    opacity: 0;
+  }
+
+  100% {
+    transform: scale(1);
+    opacity: 0;
+  }
+}
+
+.pulse-marker {
+  position: relative;
+  width: 20px;
+  height: 20px;
+}
+
+.pulse-circle {
+  width: 20px;
+  height: 20px;
+  background-color: red;
+  border-radius: 50%;
+  position: absolute;
+  animation: pulse 1.5s infinite;
+  z-index: 0;
+}
+
+.pulse-core {
+  width: 20px;
+  height: 20px;
+  background-color: darkred;
+  border-radius: 50%;
+  position: absolute;
+  z-index: 1;
+}

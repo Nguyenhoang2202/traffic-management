@@ -1,0 +1,41 @@
+@import "base.scss";
+
+.sidebar {
+    width: $sidebar;
+    background-color: $background;
+    min-height: 100vh;
+    position: sticky;
+    transition: all 0.3s ease;
+    position: relative;
+
+    font: {
+        family: Helvetica, sans-serif;
+        size: 18px;
+        weight: bold;
+    }
+
+    .list_link {
+        position: sticky;
+        top: 0;
+
+        a {
+            text-decoration: none;
+            color: $color;
+            display: block;
+            padding: 8px 12px;
+
+            &:hover {
+                background-color: $hover;
+            }
+        }
+    }
+}
+
+.close {
+    width: 0;
+    padding: 0;
+
+    a {
+        visibility: hidden;
+    }
+}

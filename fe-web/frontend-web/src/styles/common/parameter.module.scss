@@ -1,0 +1,25 @@
+.parameter_item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    background: #f9f9f9;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    width: 100%;
+    min-width: 120px;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+}
+
+.label {
+    margin-top: 0.5rem;
+    font-size: 1rem;
+    font-weight: 600;
+    color: #333;
+}
+
+.value {
+    margin-bottom: 0.5rem;
+    font-size: 2rem;
+    font-weight: bold;
+    color: #007bff;
+}

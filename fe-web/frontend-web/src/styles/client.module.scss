@@ -1,0 +1,18 @@
+@import "base";
+
+.content {
+    display: flex;
+    height: auto;
+    width: 100%;
+    transition: grid-template-columns 0.3s ease;
+
+    .dashboard-layout {
+        background-color: rgb(238, 238, 238);
+    }
+
+    .main_content {
+        height: auto;
+        width: 100%;
+    }
+
+}
